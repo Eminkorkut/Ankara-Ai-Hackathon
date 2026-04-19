@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Agentic SOC: Yerel, Otonom ve Açıklanabilir Güvenlik Operasyon Merkezi – Hackathon Demo" />
+  <title>Agentic SOC – Yerel AI Güvenlik Merkezi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-a"></div>
+  <div class="bg-glow bg-glow-b"></div>
+
+  <header class="hero card fade-in">
+    <div>
+      <p class="eyebrow">YEREL YAPAY ZEKÂ GÜVENLİK OPERASYON MERKEZİ</p>
+      <h1>Agentic SOC: Yerel, Otonom, Açıklanabilir Güvenlik</h1>
+      <p class="subtitle">
+        Demo senaryosu: Kamu kurumuna gelen zararlı dosya, agentic sistem tarafından otomatik tespit ve aksiyon.
+      </p>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <section class="card panel threat-detail fade-in-up">
+      <div class="panel-head">
+        <h2>Dosya Analiz Alanı</h2>
+      </div>
+      <p class="panel-note">
+        Şüpheli dosyayı yükleyin. ResNet18 + best_model_state_dict.pth kullanılarak analiz simülasyonu çalışır.
+      </p>
+      <form id="uploadForm" class="upload-form">
+        <div class="drag-drop-zone" id="dragDropZone">
+          <div class="drag-drop-icon">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <p class="drag-drop-text" id="dragDropText">Şüpheli dosyayı buraya sürükleyin veya <strong>tıklayarak seçin</strong></p>
+          <input id="threatFileInput" type="file" required class="hidden-file-input" />
+        </div>
+        <div class="upload-row-ip">
+          <input id="sourceIpInput" type="text" placeholder="Kaynak IP (isteğe bağlı)" />
+        </div>
+        <button id="uploadSubmitBtn" type="submit" class="btn btn-primary btn-scan">
+          <svg class="scan-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+          ResNet18 Inference Başlat
+        </button>
+      </form>
+      <div id="uploadFeedback" class="feedback"></div>
+      <section class="inference-sim" id="inferenceSimBox">
+        <div class="scanner-line" id="scannerLine"></div>
+        <div class="sim-head">
+          <h3>Model Runtime Simülasyonu</h3>
+          <span id="modelRuntimeLine">Hazır</span>
+        </div>
+        <p class="sim-meta">Model: ResNet18 | Weights: best_model_state_dict.pth</p>
+        <div class="sim-progress-meta">
+          <strong id="simProgressPercent">0%</strong>
+          <span id="simProgressStage">Beklemede</span>
+        </div>
+        <div class="sim-progress-track">
+          <div id="simProgressBar" class="sim-progress-bar"></div>
+        </div>
+        <ul id="simSteps" class="sim-steps"></ul>
+      </section>
+      <div id="threatDetailContent" class="detail-grid"></div>
+      <div class="action-row">
+        <button id="autoBlockBtn" class="btn btn-danger">IP Otomatik Engelle</button>
+        <button id="generateReportBtn" class="btn btn-ghost">Rapor Oluştur</button>
+      </div>
+      <div id="actionFeedback" class="feedback"></div>
+    </section>
+
+    <section class="card panel xai fade-in-up">
+      <div class="panel-head">
+        <h2>Ajanik Zeka Düşünce Akışı (Qwen 3.5 122B - MCP)</h2>
+        <span id="xaiBadge" class="xai-badge">Canlı Devriye</span>
+      </div>
+      <p class="panel-note">Sistemin beyninin (oto-ajanların) araç kullanımı ve düşünce akışı canlı izlenmektedir.</p>
+      
+      <div class="agentic-flow-container">
+        <div class="mcp-terminal" id="mcpTerminal">
+          <div class="mcp-init">Canlı devriye başlatılıyor...</div>
+        </div>
+
+        <div class="mcp-findings" id="mcpFindings" style="display: none;">
+          <article class="xai-main">
+            <p class="xai-label">Nihai Karar Çıktısı</p>
+            <h3 id="xaiDecision">-</h3>
+            <p id="xaiDecisionCode" class="xai-code">-</p>
+            <div class="confidence-track">
+              <div id="xaiConfidenceBar" class="confidence-bar"></div>
+            </div>
+            <p id="xaiConfidenceText" class="xai-muted">-</p>
+          </article>
+          
+          <article class="xai-card">
+            <h3>Görsel Analiz (ResNet18 Grad-CAM)</h3>
+            <div id="gradcamWrap" class="gradcam-wrap">
+              <img id="gradcamImage" src="./gradcam_example_3.png" alt="Grad-CAM görüntüsü" />
+            </div>
+            <p id="gradcamCaption" class="xai-muted" style="margin-bottom:8px;"></p>
+            <p id="llmComment" class="llm-comment"></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="card panel threat-overview fade-in-up">
+      <div class="panel-head">
+        <h2>Tehdit Durumu</h2>
+        <span id="lastUpdate" class="muted">Son senkron: --:--:--</span>
+      </div>
+      <div class="kpis" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+        <article class="kpi">
+          <p>Aktif Tehditler</p>
+          <strong id="activeThreatCount">0</strong>
+        </article>
+        <article class="kpi">
+          <p>Kritik</p>
+          <strong id="criticalThreatCount" class="danger">0</strong>
+        </article>
+        <article class="kpi">
+          <p>Orta</p>
+          <strong id="mediumThreatCount" class="warn">0</strong>
+        </article>
+        <article class="kpi">
+          <p>Düşük</p>
+          <strong id="lowThreatCount" class="safe">0</strong>
+        </article>
+      </div>
+      <div class="severity-bars mt-2">
+        <div>
+          <span>Kritik</span>
+          <div class="bar-track"><div id="criticalBar" class="bar danger"></div></div>
+        </div>
+        <div>
+          <span>Orta</span>
+          <div class="bar-track"><div id="mediumBar" class="bar warn"></div></div>
+        </div>
+        <div>
+          <span>Düşük</span>
+          <div class="bar-track"><div id="lowBar" class="bar safe"></div></div>
+        </div>
+      </div>
+      <div id="threatList" class="threat-list"></div>
+    </section>
+
+    <section class="card panel system-status fade-in-up">
+      <div class="panel-head">
+        <h2>Sistem Durumu</h2>
+      </div>
+      <ul class="status-list">
+        <li>
+          <span>LLM</span>
+          <span class="status online" id="llmStatus">Çevrimiçi</span>
+        </li>
+        <li>
+          <span>Ajanlar</span>
+          <span class="status online" id="agentStatus">Çalışıyor</span>
+        </li>
+        <li>
+          <span>Sandbox</span>
+          <span class="status online" id="sandboxStatus">Aktif</span>
+        </li>
+      </ul>
+      <div class="flow-steps" id="flowSteps"></div>
+    </section>
+
+    <section class="card panel live-alerts fade-in-up">
+      <div class="panel-head">
+        <h2>Canlı Uyarılar</h2>
+      </div>
+      <ul id="liveAlertsList" class="alert-list"></ul>
+    </section>
+
+
+    <section class="card panel terminal fade-in-up">
+      <div class="panel-head">
+        <h2>Terminal Akışı</h2>
+      </div>
+      <pre id="terminalOutput" class="terminal-output"></pre>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <strong>Agentic SOC</strong> — Yerel, Otonom, Açıklanabilir Güvenlik &bull; Hackathon Demo 2026
+  </footer>
+
+  <aside id="reportModal" class="report-modal" aria-hidden="true">
+    <div class="report-card">
+      <div class="panel-head">
+        <h2>Olay Raporu</h2>
+        <div class="report-actions">
+          <button id="downloadReportBtn" class="btn btn-primary btn-small">Word indir (.docx)</button>
+          <button id="closeReportBtn" class="close-btn" aria-label="Raporu kapat">&times;</button>
+        </div>
+      </div>
+      <div id="reportReadable" class="report-readable"></div>
+    </div>
+  </aside>
+
+  <aside id="analysisModal" class="analysis-modal" aria-hidden="true">
+    <div class="analysis-card">
+      <div class="panel-head">
+        <h2>Analiz Sonucu (Demo Inference)</h2>
+        <button id="analysisCloseBtn" class="close-btn" aria-label="Analiz penceresini kapat">&times;</button>
+      </div>
+      <p id="analysisSummary" class="analysis-summary">Analiz tamamlandı.</p>
+      <div class="analysis-grid">
+        <section class="analysis-block">
+          <h3>Model Çıktısı</h3>
+          <div class="analysis-kv">
+            <div><p>Karar</p><strong id="analysisDecision">-</strong></div>
+            <div><p>Risk Skoru</p><strong id="analysisRiskScore">-</strong></div>
+            <div><p>Güven</p><strong id="analysisConfidence">-</strong></div>
+            <div><p>Tehdit ID</p><strong id="analysisThreatId">-</strong></div>
+            <div><p>Kaynak IP</p><strong id="analysisSourceIp">-</strong></div>
+            <div><p>Model</p><strong>ResNet18 + best_model_state_dict.pth</strong></div>
+          </div>
+          <h3>LLM Yorumu</h3>
+          <p id="analysisLlmComment" class="analysis-llm">-</p>
+        </section>
+        <section class="analysis-block">
+          <h3>Grad-CAM Çıktısı</h3>
+          <div class="analysis-gradcam-wrap">
+            <img id="analysisGradcamImage" src="./gradcam_example_3.png" alt="Grad-CAM sonuç görüntüsü" />
+          </div>
+          <p id="analysisGradcamCaption" class="xai-muted">Grad-CAM ısı haritası yüklenecek.</p>
+          <h3>Inference Adım Özeti</h3>
+          <ul id="analysisStepSummary" class="report-list"></ul>
+        </section>
+      </div>
+      <div class="analysis-actions">
+        <button id="analysisCreateReportBtn" class="btn btn-primary">Rapor Oluştur</button>
+        <button id="analysisBlockIpBtn" class="btn btn-danger">IP Otomatik Engelle</button>
+      </div>
+    </div>
+  </aside>
+
+  <script src="./script.js"></script>
+</body>
+</html>
